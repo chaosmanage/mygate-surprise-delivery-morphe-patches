@@ -1,6 +1,6 @@
 # MyGate Surprise Delivery — Morphe patch source
 
-An **unofficial, experimental** patch source for MyGate Android **7.31.0** (`com.mygate.user`). It replaces the built-in Raise Alert widget with a compact **Approve Delivery · 1 hour** widget.
+An **unofficial, experimental** patch source for MyGate Android **7.31.0** (`com.mygate.user`). It replaces the built-in Raise Alert widget with a compact **Approve Delivery · 1 hour** widget. **Each tap submits one independent request** (queued if another submission is already pending).
 
 **Use as a remote Morphe patch source**: open Morphe → **Sources** → **+** → **Remote**, then enter:
 
@@ -10,10 +10,12 @@ Or use the [Add to Morphe](https://morphe.software/add-source?github=chaosmanage
 
 Morphe downloads the latest `.mpp` from the [GitHub Releases](https://github.com/chaosmanage/mygate-surprise-delivery-morphe-patches/releases) page and you can tap **Update** in Morphe to fetch new versions. No repeated downloads of `.mpp` files are required.
 
+**Every tap creates a new request (v1.3.0).** While a previous approval is still processing, additional taps are queued and sent sequentially. Five taps initiate five requests. There is no approval cooldown or active-approval suppression. The MyGate backend may independently reject requests; successful approval of each cannot be guaranteed.
+
 ## Important limitations
 
 - Works only with the specified **MyGate 7.31.0** APK. Start from that original APK when applying the patch.
-- **One-tap approval is not confirmed working on a real device.** The code applies, builds, and signs through Morphe Desktop, but the earlier phone build reported a network/transport error. Version 1.2.0 includes additional session-refresh handling and error diagnostics; a successful server-side approval is not yet verified.
+- **One-tap approval is not confirmed working on a real device.** The code applies, builds, and signs through Morphe Desktop, but the earlier phone build reported a network/transport error. Version 1.3.0 retains session-refresh handling and error diagnostics, plus a rapid-tap request queue; a successful server-side approval is not yet verified.
 - Requires your own valid MyGate login, eligible flat, internet connection, and server permission for Surprise Delivery. It does not bypass entitlement checks.
 - Replaces the **Raise Alert** widget, rather than adding a second widget provider. Existing widgets may need to be removed and added again after patching.
 - The patch modifies a third-party app; there is no endorsement or affiliation with MyGate or Morphe.
@@ -40,7 +42,7 @@ The [official release workflow](.github/workflows/release.yml) publishes new bun
 ## Patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.2.0](https://github.com/chaosmanage/mygate-surprise-delivery-morphe-patches/releases/tag/v1.2.0)**&nbsp;&nbsp;&middot;&nbsp;&nbsp;`main`&nbsp;&nbsp;&middot;&nbsp;&nbsp;**1 patches** across **1 apps**&nbsp;&nbsp;&middot;&nbsp;&nbsp;[Full details](PATCHES.md)
+> **[v1.3.0](https://github.com/chaosmanage/mygate-surprise-delivery-morphe-patches/releases/tag/v1.3.0)**&nbsp;&nbsp;&middot;&nbsp;&nbsp;`main`&nbsp;&nbsp;&middot;&nbsp;&nbsp;**1 patches** across **1 apps**&nbsp;&nbsp;&middot;&nbsp;&nbsp;[Full details](PATCHES.md)
 
 | # | App | Patches | Version | Package |
 |---|---|---|---|---|

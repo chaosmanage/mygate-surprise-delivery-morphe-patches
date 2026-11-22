@@ -3,6 +3,8 @@
 .source "QuickApproveWidget.java"
 
 .field private static sPending:Z
+.field private static sQueued:I
+.field private static sLastStartSeconds:J
 .field private static sPhase:Ljava/lang/String;
 
 .method public constructor <init>()V
@@ -38,7 +40,12 @@
     .locals 10
     sget-boolean v0, Lcom/mygate/user/quickapprove/QuickApproveWidget;->sPending:Z
     if-eqz v0, :begin
-    const-string v0, "SENDING..."
+    # This is a distinct tap: queue another request rather than dropping it.
+    sget v0, Lcom/mygate/user/quickapprove/QuickApproveWidget;->sQueued:I
+    add-int/lit8 v0, v0, 0x1
+    sput v0, Lcom/mygate/user/quickapprove/QuickApproveWidget;->sQueued:I
+    invoke-static {}, Lcom/mygate/user/quickapprove/QuickApproveWidget;->queuedStatus()Ljava/lang/String;
+    move-result-object v0
     invoke-static {p1, v0}, Lcom/mygate/user/quickapprove/QuickApproveWidget;->updateWidgets(Landroid/content/Context;Ljava/lang/String;)V
     return-void
 
@@ -97,10 +104,9 @@
     const-string v4, "0"
     invoke-virtual {v3, v4}, Lcom/mygate/user/modules/notifygate/entity/PreApproveData;->setDelegateDelivery(Ljava/lang/String;)V
 
-    invoke-static {}, Ljava/lang/System;->currentTimeMillis()J
+    # Distinct start timestamp for each tap, even if the API responds within one second.
+    invoke-static {}, Lcom/mygate/user/quickapprove/QuickApproveWidget;->nextStartSeconds()J
     move-result-wide v4
-    const-wide/16 v6, 0x3e8
-    div-long/2addr v4, v6
     invoke-static {v4, v5}, Ljava/lang/Long;->toString(J)Ljava/lang/String;
     move-result-object v8
     invoke-virtual {v3, v8}, Lcom/mygate/user/modules/notifygate/entity/PreApproveData;->setStime(Ljava/lang/String;)V
@@ -132,6 +138,7 @@
     :reset
     const/4 v1, 0x0
     sput-boolean v1, Lcom/mygate/user/quickapprove/QuickApproveWidget;->sPending:Z
+    invoke-static {p1}, Lcom/mygate/user/quickapprove/QuickApproveWidget;->startNextQueued(Landroid/content/Context;)V
     return-void
 
     :error
@@ -160,6 +167,7 @@
     if-eqz v2, :end
     invoke-virtual {v1, p0}, Lcom/mygate/user/utilities/eventbus/EventbusImpl;->c(Ljava/lang/Object;)V
     :end
+    invoke-static {p1}, Lcom/mygate/user/quickapprove/QuickApproveWidget;->startNextQueued(Landroid/content/Context;)V
     return-void
 .end method
 
@@ -175,6 +183,9 @@
     invoke-static {v0, v1}, Lcom/mygate/user/quickapprove/QuickApproveWidget;->updateWidgets(Landroid/content/Context;Ljava/lang/String;)V
     sget-object v0, Lcom/mygate/user/utilities/eventbus/EventbusImpl;->c:Lcom/mygate/user/utilities/eventbus/EventbusImpl;
     invoke-virtual {v0, p0}, Lcom/mygate/user/utilities/eventbus/EventbusImpl;->c(Ljava/lang/Object;)V
+    invoke-static {}, Lcom/mygate/user/app/AppController;->a()Lcom/mygate/user/app/AppController;
+    move-result-object v0
+    invoke-static {v0}, Lcom/mygate/user/quickapprove/QuickApproveWidget;->startNextQueued(Landroid/content/Context;)V
     return-void
 .end method
 
@@ -194,6 +205,7 @@
     invoke-static {v1, v0}, Lcom/mygate/user/quickapprove/QuickApproveWidget;->updateWidgets(Landroid/content/Context;Ljava/lang/String;)V
     sget-object v2, Lcom/mygate/user/utilities/eventbus/EventbusImpl;->c:Lcom/mygate/user/utilities/eventbus/EventbusImpl;
     invoke-virtual {v2, p0}, Lcom/mygate/user/utilities/eventbus/EventbusImpl;->c(Ljava/lang/Object;)V
+    invoke-static {v1}, Lcom/mygate/user/quickapprove/QuickApproveWidget;->startNextQueued(Landroid/content/Context;)V
     return-void
 .end method
 
@@ -332,6 +344,13 @@
     const-string v0, "1 HOUR"
     return-object v0
     :check_send
+    const-string v0, "QUEUED"
+    invoke-virtual {p0, v0}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
+    move-result v1
+    if-eqz v1, :check_sending
+    const-string v0, "IN QUEUE"
+    return-object v0
+    :check_sending
     const-string v0, "SENDING"
     invoke-virtual {p0, v0}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
     move-result v1
@@ -377,4 +396,52 @@
     return-object v5
     :original
     return-object p1
+.end method
+
+
+.method private static queuedStatus()Ljava/lang/String;
+    .locals 3
+    new-instance v0, Ljava/lang/StringBuilder;
+    invoke-direct {v0}, Ljava/lang/StringBuilder;-><init>()V
+    const-string v1, "QUEUED\n"
+    invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    sget v1, Lcom/mygate/user/quickapprove/QuickApproveWidget;->sQueued:I
+    invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder;
+    const-string v1, " MORE"
+    invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {v0}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+    move-result-object v2
+    return-object v2
+.end method
+
+.method private static startNextQueued(Landroid/content/Context;)V
+    .locals 2
+    sget v0, Lcom/mygate/user/quickapprove/QuickApproveWidget;->sQueued:I
+    if-lez v0, :done
+    add-int/lit8 v0, v0, -0x1
+    sput v0, Lcom/mygate/user/quickapprove/QuickApproveWidget;->sQueued:I
+    new-instance v1, Lcom/mygate/user/quickapprove/QuickApproveWidget;
+    invoke-direct {v1}, Lcom/mygate/user/quickapprove/QuickApproveWidget;-><init>()V
+    invoke-direct {v1, p0}, Lcom/mygate/user/quickapprove/QuickApproveWidget;->approve(Landroid/content/Context;)V
+    :done
+    return-void
+.end method
+
+
+.method private static nextStartSeconds()J
+    .locals 6
+    invoke-static {}, Ljava/lang/System;->currentTimeMillis()J
+    move-result-wide v0
+    const-wide/16 v2, 0x3e8
+    div-long/2addr v0, v2
+    sget-wide v2, Lcom/mygate/user/quickapprove/QuickApproveWidget;->sLastStartSeconds:J
+    cmp-long v4, v0, v2
+    if-lez v4, :advance
+    sput-wide v0, Lcom/mygate/user/quickapprove/QuickApproveWidget;->sLastStartSeconds:J
+    return-wide v0
+    :advance
+    const-wide/16 v4, 0x1
+    add-long/2addr v2, v4
+    sput-wide v2, Lcom/mygate/user/quickapprove/QuickApproveWidget;->sLastStartSeconds:J
+    return-wide v2
 .end method

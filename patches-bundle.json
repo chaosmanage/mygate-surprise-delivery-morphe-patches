@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-11-22T20:02:16",
-  "description": "Initial Morphe remote source release (v1.2.0): one-tap delivery widget and network diagnostics. Live approval remains unverified.",
-  "download_url": "https://github.com/chaosmanage/mygate-surprise-delivery-morphe-patches/releases/download/v1.2.0/patches-1.2.0.mpp",
+  "created_at": "2026-11-22T20:18:46",
+  "description": "Separate approval request for every widget tap. Additional taps queue while a request is in flight; rapid taps use distinct start timestamps. Authenticated repeated approval is not independently device-tested.",
+  "download_url": "https://github.com/chaosmanage/mygate-surprise-delivery-morphe-patches/releases/download/v1.3.0/patches-1.3.0.mpp",
   "signature_download_url": "",
-  "version": "1.2.0"
+  "version": "1.3.0"
 }
