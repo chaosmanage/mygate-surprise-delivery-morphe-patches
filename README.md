@@ -12,6 +12,8 @@ Morphe downloads the latest `.mpp` from the [GitHub Releases](https://github.com
 
 **Every tap creates a new request (v1.3.0).** While a previous approval is still processing, additional taps are queued and sent sequentially. Five taps initiate five requests. There is no approval cooldown or active-approval suppression. The MyGate backend may independently reject requests; successful approval of each cannot be guaranteed.
 
+**v1.3.1 Android bundle fix:** Includes `classes.dex` for Morphe Manager, not just desktop JVM `.class` files. Earlier GitHub bundles could show 0 patches on Android. Each tap continues to initiate a separate request (no cooldown).
+
 ## Important limitations
 
 - Works only with the specified **MyGate 7.31.0** APK. Start from that original APK when applying the patch.
@@ -42,7 +44,7 @@ The [official release workflow](.github/workflows/release.yml) publishes new bun
 ## Patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.3.0](https://github.com/chaosmanage/mygate-surprise-delivery-morphe-patches/releases/tag/v1.3.0)**&nbsp;&nbsp;&middot;&nbsp;&nbsp;`main`&nbsp;&nbsp;&middot;&nbsp;&nbsp;**1 patches** across **1 apps**&nbsp;&nbsp;&middot;&nbsp;&nbsp;[Full details](PATCHES.md)
+> **[v1.3.1](https://github.com/chaosmanage/mygate-surprise-delivery-morphe-patches/releases/tag/v1.3.1)**&nbsp;&nbsp;&middot;&nbsp;&nbsp;`main`&nbsp;&nbsp;&middot;&nbsp;&nbsp;**1 patches** across **1 apps**&nbsp;&nbsp;&middot;&nbsp;&nbsp;[Full details](PATCHES.md)
 
 | # | App | Patches | Version | Package |
 |---|---|---|---|---|

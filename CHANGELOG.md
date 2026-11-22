@@ -1,3 +1,9 @@
+## v1.3.1 — 2026-11-23
+
+- Fix Android Manager reporting 0 patches: include the patch implementation as `classes.dex` in released `.mpp`.
+- Add automated validation to catch Android bundles missing patch code.
+- Retain one separate approval attempt per widget tap.
+
 ## v1.3.0 — 2026-11-23
 
 - Every tap now represents a distinct approval request, including rapid taps.
