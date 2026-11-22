@@ -1,6 +1,7 @@
 package com.mygate.quickpatch
 
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import app.morphe.patcher.patch.ApkFileType
 import app.morphe.patcher.patch.AppTarget
 import app.morphe.patcher.patch.Compatibility
@@ -27,6 +28,22 @@ val surpriseDeliveryOneTap = patch(
     extendWith("mygate_quickapprove_extension.dex")
 
     execute {
+        // Keep MyGate's own secure OkHttp transport. Only when Android DNS fails to resolve
+        // ack.mygate.in, use the hostname's current edge IPs; TLS hostname verification remains on.
+        // The fallback resolver is installed on ServiceGenerator's client (not a global DNS hook).
+        val serviceGenerator = mutableClassDefBy("Lcom/mygate/user/rest/ServiceGenerator;")
+        val retrofitFactory = serviceGenerator.methods.single { it.name == "b" && it.parameterTypes.size == 2 }
+        val builderCtorIndex = retrofitFactory.implementation!!.instructions.indexOfFirst { instruction ->
+            (instruction as? ReferenceInstruction)?.reference?.toString() ==
+                "Lokhttp3/OkHttpClient\$Builder;-><init>()V"
+        }
+        require(builderCtorIndex >= 0) { "MyGate 7.31.0 OkHttp builder constructor not found" }
+        retrofitFactory.addInstructions(builderCtorIndex + 1, """
+            new-instance v2, Lcom/mygate/user/quickapprove/FallbackDns;
+            invoke-direct {v2}, Lcom/mygate/user/quickapprove/FallbackDns;-><init>()V
+            iput-object v2, v1, Lokhttp3/OkHttpClient${'$'}Builder;->k:Lokhttp3/Dns;
+        """.trimIndent())
+
         val receiver = mutableClassDefBy("Lcom/mygate/user/common/appwidget/security/SecurityWidgetReceiver;")
         val onReceive = receiver.methods.single { it.name == "onReceive" }
         onReceive.addInstructions(0, """

@@ -14,6 +14,15 @@ with zipfile.ZipFile(patch) as z:
     files = set(z.namelist())
     assert 'classes.dex' in files, 'Missing classes.dex: Morphe Android cannot load this patch, even if Desktop can.'
     assert 'mygate_quickapprove_extension.dex' in files, 'Missing MyGate extension DEX'
+    widget_dex = z.read('mygate_quickapprove_extension.dex')
+    if version == '1.3.2':
+        required = [
+            b'Lcom/mygate/user/quickapprove/FallbackDns;',
+            b'ack.mygate.in', b'104.18.14.11', b'104.18.15.11',
+            b'Lokhttp3/Dns;',
+            b'Lcom/mygate/user/quickapprove/QuickApproveWidget;',
+        ]
+        assert all(marker in widget_dex for marker in required), 'DNS fallback or widget missing from extension'
     dex = z.read('classes.dex')
     assert dex[:4] == b'dex\n', 'classes.dex has invalid DEX header'
     assert b'Lcom/mygate/quickpatch/QuickDeliveryPatchKt;' in dex, 'Patch entry point not found in Android DEX'

@@ -14,6 +14,8 @@ Morphe downloads the latest `.mpp` from the [GitHub Releases](https://github.com
 
 **v1.3.1 Android bundle fix:** Includes `classes.dex` for Morphe Manager, not just desktop JVM `.class` files. Earlier GitHub bundles could show 0 patches on Android. Each tap continues to initiate a separate request (no cooldown).
 
+**v1.3.2 DNS fallback:** When Android cannot resolve `ack.mygate.in`, the patch tries the two public IPs that were checked against the same MyGate HTTPS hostname (104.18.14.11, 104.18.15.11). TLS certificate and hostname checks remain enabled. These Cloudflare IPs may change, and this fix does not guarantee network reachability or MyGate server acceptance. This does not contact any additional resolver, proxy, or service.
+
 ## Important limitations
 
 - Works only with the specified **MyGate 7.31.0** APK. Start from that original APK when applying the patch.
@@ -44,7 +46,7 @@ The [official release workflow](.github/workflows/release.yml) publishes new bun
 ## Patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.3.1](https://github.com/chaosmanage/mygate-surprise-delivery-morphe-patches/releases/tag/v1.3.1)**&nbsp;&nbsp;&middot;&nbsp;&nbsp;`main`&nbsp;&nbsp;&middot;&nbsp;&nbsp;**1 patches** across **1 apps**&nbsp;&nbsp;&middot;&nbsp;&nbsp;[Full details](PATCHES.md)
+> **[v1.3.2](https://github.com/chaosmanage/mygate-surprise-delivery-morphe-patches/releases/tag/v1.3.2)**&nbsp;&nbsp;&middot;&nbsp;&nbsp;`main`&nbsp;&nbsp;&middot;&nbsp;&nbsp;**1 patches** across **1 apps**&nbsp;&nbsp;&middot;&nbsp;&nbsp;[Full details](PATCHES.md)
 
 | # | App | Patches | Version | Package |
 |---|---|---|---|---|
